@@ -1,4 +1,4 @@
-package controllers
+package foo
 import "fmt"
 
 func SayHi() {
