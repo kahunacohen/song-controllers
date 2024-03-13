@@ -7,7 +7,6 @@ import (
 
 func ListSongs(conn *pgx.Conn) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		// fmt.Println(songctls.ListSongs)
 		// userID := c.Param("user_id")
 		// userIDAsInt, _ := strconv.Atoi(userID)
