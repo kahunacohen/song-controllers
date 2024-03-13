@@ -1,1 +1,1 @@
-GOPROXY=proxy.golang.org go list -m github.com/kahunacohen/song-controllers@$1
+GOPROXY=proxy.golang.org go list -m github.com/kahunacohen/songctls@$1
