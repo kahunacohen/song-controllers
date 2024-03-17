@@ -73,5 +73,6 @@ func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 			c.Redirect(http.StatusSeeOther, uri)
 			return
 		}
+		responder(c, song)
 	}
 }
