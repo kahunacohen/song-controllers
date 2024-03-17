@@ -2,6 +2,7 @@ package ctls
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -47,8 +48,30 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 		uri := fmt.Sprintf("/users/%s/songs/%d", userID, song.Id)
 		editModeUri := fmt.Sprintf("%s?mode=edit", uri)
 		mode := c.Query("mode")
-		fmt.Println("HI!!!!!")
-
 		responder(c, mode, *song, uri, editModeUri)
+	}
+}
+
+type UpdateResponder func(context *gin.Context)
+
+func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("user_id")
+		var song mdls.Song
+		c.Bind(&song)
+		_, err := conn.Exec(c, "UPDATE songs SET title=$1, lyrics=$2 WHERE id=$3",
+			song.Title, song.Lyrics, song.Id)
+		if err != nil {
+			// @TODO error handling.
+			fmt.Println("error!")
+		}
+		uri := fmt.Sprintf("/users/%s/songs/%d?flashOn=true&flashMsg=Song%%20saved", userID, song.Id)
+		if c.Request.Method == "POST" {
+			// We are receiving from old-school form where method=POST
+			// is not supported by browsers, so redirect to same page
+			// with a GET.
+			c.Redirect(http.StatusSeeOther, uri)
+			return
+		}
 	}
 }
