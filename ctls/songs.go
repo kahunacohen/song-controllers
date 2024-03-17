@@ -52,7 +52,7 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 	}
 }
 
-type UpdateResponder func(context *gin.Context)
+type UpdateResponder func(context *gin.Context, song mdls.Song)
 
 func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
