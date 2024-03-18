@@ -1,4 +1,4 @@
-package mdls
+package models
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package ctls
+package controllers
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
-	"github.com/kahunacohen/songctls/mdls"
+	"github.com/kahunacohen/songctls/models"
 )
 
-type ListResponder func(context *gin.Context, userID string, songs []mdls.Song, totalCount int, page int, searchTerm string, partial bool)
+type ListResponder func(context *gin.Context, userID string, songs []models.Song, totalCount int, page int, searchTerm string, partial bool)
 
 func ListSongs(conn *pgx.Conn, responder ListResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -24,7 +24,7 @@ func ListSongs(conn *pgx.Conn, responder ListResponder) gin.HandlerFunc {
 		if err != nil {
 			pageInt = 1
 		}
-		songs, totalCount, err := mdls.SearchSongs(conn, userIDAsInt, q, pageInt)
+		songs, totalCount, err := models.SearchSongs(conn, userIDAsInt, q, pageInt)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -32,14 +32,14 @@ func ListSongs(conn *pgx.Conn, responder ListResponder) gin.HandlerFunc {
 	}
 }
 
-type ReadResponder func(context *gin.Context, mode string, song mdls.Song, uri string, editModeUri string)
+type ReadResponder func(context *gin.Context, mode string, song models.Song, uri string, editModeUri string)
 
 func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		songID := c.Param("song_id")
 		songIDAsInt, _ := strconv.Atoi(songID)
 		userID := c.Param("user_id")
-		song, getSongErr := mdls.GetSongByID(conn, songIDAsInt)
+		song, getSongErr := models.GetSongByID(conn, songIDAsInt)
 		if getSongErr != nil {
 			// templates.Render(c, templates.Base("Not found", templates.NotFound()))
 			// return
@@ -52,15 +52,14 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 	}
 }
 
-type UpdateResponder func(context *gin.Context, song mdls.Song)
+type UpdateResponder func(context *gin.Context, song models.Song)
 
 func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("user_id")
-		var song mdls.Song
+		var song models.Song
 		c.Bind(&song)
-		_, err := conn.Exec(c, "UPDATE songs SET title=$1, lyrics=$2 WHERE id=$3",
-			song.Title, song.Lyrics, song.Id)
+		err := models.UpdateSong(conn, &song)
 		if err != nil {
 			// @TODO error handling.
 			fmt.Println("error!")
