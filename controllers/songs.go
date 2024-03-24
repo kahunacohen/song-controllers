@@ -19,7 +19,6 @@ func ListSongs(conn *pgx.Conn, responder ListResponder) gin.HandlerFunc {
 		q := c.Query("q")
 		page := c.Query("page")
 		content := c.Query("ct")
-		fmt.Println(content)
 		pageInt, err := strconv.Atoi(page)
 		if err != nil {
 			pageInt = 1
