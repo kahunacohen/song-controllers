@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -20,6 +21,16 @@ type Song struct {
 	UserID    int       `form:"user_id" json:"user_id"`
 }
 
+func (s Song) Html() string {
+	var ret string
+	chordRe := regexp.MustCompile(`\[(.+?)\]`)
+	ret = fmt.Sprintf(
+		"<div style='position: relative;'>%s",
+		chordRe.ReplaceAllString(s.Lyrics, "<span style='position:absolute;top:-12px;font-size:90%;font-weight:bold;'>$1</span>"))
+	lineWrapperRe := regexp.MustCompile(`(?m)^.*$`)
+	ret = lineWrapperRe.ReplaceAllString(ret, "<div style='position:relative;line-height:2.5;'>$0</div>")
+	return ret
+}
 func SearchSongs(conn *pgx.Conn, userID int, q string, page int) ([]Song, int, error) {
 	offset := (page - 1) * 10
 	var query string
@@ -69,7 +80,7 @@ func GetSongByID(conn *pgx.Conn, id int) (*Song, error) {
 	return &song, nil
 }
 func UpdateSong(conn *pgx.Conn, song *Song) error {
-	query := "UPDATE songs SET title='$1', lyrics='$2' WHERE id=$3;"
+	query := "UPDATE songs SET title=$1, lyrics=$2 WHERE id=$3;"
 	_, err := conn.Exec(context.Background(), query, song.Title, song.Lyrics, song.Id)
 	if err != nil {
 		return fmt.Errorf("error updating song: %v", err)
@@ -91,7 +102,6 @@ func DeleteSong(conn *pgx.Conn, songID int) error {
 	query := "DELETE FROM songs WHERE id=$1"
 	_, err := conn.Exec(context.Background(), query, songID)
 	if err != nil {
-		fmt.Println("error here!")
 		return err
 	}
 	return nil

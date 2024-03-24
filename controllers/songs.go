@@ -62,7 +62,8 @@ func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 		err := models.UpdateSong(conn, &song)
 		if err != nil {
 			// @TODO error handling.
-			fmt.Println("error!")
+			fmt.Printf("error updating song: %v\n", err)
+
 		}
 		uri := fmt.Sprintf("/users/%s/songs/%d?flashOn=true&flashMsg=Song%%20saved", userID, song.Id)
 		if c.Request.Method == "POST" {
