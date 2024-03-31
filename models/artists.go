@@ -3,13 +3,15 @@ package models
 import (
 	"context"
 	"fmt"
+	"html"
 
 	"github.com/jackc/pgx/v5"
 )
 
 type Artist struct {
-	Id   int
-	Name string
+	Id     int    `form:"id" json:"id"`
+	Name   string `form:"name" binding:"required" json:"name"`
+	UserID int    `form:"user_id" json:"user_id"`
 }
 
 func SearchArtists(conn *pgx.Conn, userID int, q string, page int) ([]Artist, int, error) {
@@ -49,4 +51,15 @@ func SearchArtists(conn *pgx.Conn, userID int, q string, page int) ([]Artist, in
 		}
 	}
 	return artists, totalCount, nil
+}
+func CreateArtist(conn *pgx.Conn, artist *Artist) error {
+	var id int
+	artist.Name = html.EscapeString(artist.Name)
+	query := "INSERT INTO artists (name, user_id) VALUES($1, $2) RETURNING id"
+	err := conn.QueryRow(context.Background(), query, artist.Name, artist.UserID).Scan(&id)
+	if err != nil {
+		return fmt.Errorf("error creating artist: %v", err)
+	}
+	artist.Id = id
+	return nil
 }
