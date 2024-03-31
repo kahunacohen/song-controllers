@@ -22,13 +22,13 @@ func SearchArtists(conn *pgx.Conn, userID int, q string, page int) ([]Artist, in
 	var totalCount int
 	var err error
 	if q == "" {
-		query = "SELECT id, name FROM artists WHERE user_id = $1 ORDER BY name LIMIT 10 OFFSET $2;"
+		query = "SELECT id, name, user_id FROM artists WHERE user_id = $1 ORDER BY name LIMIT 10 OFFSET $2;"
 		rows, err = conn.Query(context.Background(), query, userID, offset)
 		if err != nil {
 			fmt.Printf("error: %v\n", err)
 		}
 	} else {
-		query = "SELECT artist_id, name FROM artists WHERE user_id = $1 AND nane ILIKE '%' || $2 || '%' ORDER BY name LIMIT 10 OFFSET $3;"
+		query = "SELECT artist_id, name, user_id FROM artists WHERE user_id = $1 AND nane ILIKE '%' || $2 || '%' ORDER BY name LIMIT 10 OFFSET $3;"
 		rows, err = conn.Query(context.Background(), query, userID, q, offset)
 		if err != nil {
 			fmt.Printf("error: %v\n", err)
@@ -36,7 +36,7 @@ func SearchArtists(conn *pgx.Conn, userID int, q string, page int) ([]Artist, in
 	}
 	for rows.Next() {
 		var artist Artist
-		if err := rows.Scan(&artist.Id, &artist.Name); err != nil {
+		if err := rows.Scan(&artist.Id, &artist.Name, &artist.UserID); err != nil {
 			return nil, 0, fmt.Errorf("error scanning row: %v", err)
 		}
 		artists = append(artists, artist)
