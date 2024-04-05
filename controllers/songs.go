@@ -31,7 +31,7 @@ func ListSongs(conn *pgx.Conn, responder ListResponder) gin.HandlerFunc {
 	}
 }
 
-type ReadResponder func(context *gin.Context, mode string, song models.Song, uri string, editModeUri string)
+type ReadResponder func(context *gin.Context, mode string, song models.Song, artists []models.Artist, uri string, editModeUri string)
 
 func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -47,11 +47,13 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 		uri := fmt.Sprintf("/users/%s/songs/%d", userID, song.Id)
 		editModeUri := fmt.Sprintf("%s?mode=edit", uri)
 		mode := c.Query("mode")
-		responder(c, mode, *song, uri, editModeUri)
+		artists, _, _ := models.SearchArtists(conn, 1, "", 1)
+		fmt.Println(artists)
+		responder(c, mode, *song, artists, uri, editModeUri)
 	}
 }
 
-type UpdateResponder func(context *gin.Context, song models.Song)
+type UpdateResponder func(context *gin.Context, song models.Song, artists []models.Artist)
 
 func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -72,6 +74,7 @@ func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 			c.Redirect(http.StatusSeeOther, uri)
 			return
 		}
-		responder(c, song)
+		var artists []models.Artist
+		responder(c, song, artists)
 	}
 }
