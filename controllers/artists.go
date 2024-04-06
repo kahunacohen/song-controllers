@@ -22,7 +22,7 @@ func ListArtists(conn *pgx.Conn, responder ArtistResponder) gin.HandlerFunc {
 		if err != nil {
 			pageInt = 1
 		}
-		artists, totalCount, err := models.SearchArtists(conn, userIDAsInt, q, pageInt)
+		artists, totalCount, err := models.SearchArtists(conn, userIDAsInt, &q, &pageInt)
 		if err != nil {
 			fmt.Println(err)
 		}

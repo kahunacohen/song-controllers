@@ -38,6 +38,7 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 		songID := c.Param("song_id")
 		songIDAsInt, _ := strconv.Atoi(songID)
 		userID := c.Param("user_id")
+		userIdAsInt, _ := strconv.Atoi(userID)
 		song, getSongErr := models.GetSongByID(conn, songIDAsInt)
 		if getSongErr != nil {
 			// templates.Render(c, templates.Base("Not found", templates.NotFound()))
@@ -47,8 +48,7 @@ func ReadSong(conn *pgx.Conn, responder ReadResponder) gin.HandlerFunc {
 		uri := fmt.Sprintf("/users/%s/songs/%d", userID, song.Id)
 		editModeUri := fmt.Sprintf("%s?mode=edit", uri)
 		mode := c.Query("mode")
-		artists, _, _ := models.SearchArtists(conn, 1, "", 1)
-		fmt.Println(artists)
+		artists, _, _ := models.SearchArtists(conn, userIdAsInt, nil, nil)
 		responder(c, mode, *song, artists, uri, editModeUri)
 	}
 }
