@@ -13,7 +13,7 @@ import (
 type Song struct {
 	CreatedAt time.Time `json:"created_at"`
 	Capo      int
-	Artist    string    `json:"artist"`
+	Artist    string    `form:"artist" binding:"required" json:"artist"`
 	Genre     string    `form:"genre" json:"genre"`
 	Lyrics    string    `form:"lyrics" binding:"required" json:"lyrics"`
 	Id        int       `form:"id" json:"id"`
@@ -40,12 +40,14 @@ func SearchSongs(conn *pgx.Conn, userID int, q string, page int) ([]Song, int, e
 	var totalCount int
 	var err error
 	if q == "" {
+		fmt.Println("blank")
 		query = "SELECT song_id, user_id, title, genre, artist_name FROM songs_by_user WHERE user_id = $1 ORDER BY title LIMIT 10 OFFSET $2;"
 		rows, err = conn.Query(context.Background(), query, userID, offset)
 		if err != nil {
 			fmt.Printf("error: %v\n", err)
 		}
 	} else {
+		fmt.Println("SHIT")
 		query = "SELECT song_id, user_id, title, genre, artist_name FROM songs_by_user WHERE user_id = $1 AND CONCAT(title, ' ', artist_name) ILIKE '%' || $2 || '%' ORDER BY title LIMIT 10 OFFSET $3;"
 		rows, err = conn.Query(context.Background(), query, userID, q, offset)
 		if err != nil {
@@ -55,7 +57,7 @@ func SearchSongs(conn *pgx.Conn, userID int, q string, page int) ([]Song, int, e
 	for rows.Next() {
 		var song Song
 		if err := rows.Scan(&song.Id, &song.UserID, &song.Title, &song.Genre, &song.Artist); err != nil {
-			return nil, 0, fmt.Errorf("error scanning row: %v", err)
+			return nil, 0, fmt.Errorf("error scanning row when getting songs: %v", err)
 		}
 		songs = append(songs, song)
 	}
@@ -95,7 +97,7 @@ func CreateSong(conn *pgx.Conn, song *Song) error {
 	song.Lyrics = html.EscapeString(song.Lyrics)
 	song.Title = html.EscapeString(song.Title)
 	query := "INSERT INTO songs (title, lyrics, user_id, genre_id, artist_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
-	err := conn.QueryRow(context.Background(), query, song.Title, song.Lyrics, song.UserID, 1, 2).Scan(&id)
+	err := conn.QueryRow(context.Background(), query, song.Title, song.Lyrics, song.UserID, 1, song.Artist).Scan(&id)
 	if err != nil {
 		return fmt.Errorf("error creating song: %v", err)
 	}
