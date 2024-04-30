@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"fmt"
-	"html"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -63,7 +62,6 @@ func SearchArtists(conn *pgx.Conn, userID int, q *string, page *int) ([]Artist, 
 }
 func CreateArtist(conn *pgx.Conn, artist *Artist) error {
 	var id int
-	artist.Name = html.EscapeString(artist.Name)
 	query := "INSERT INTO artists (name, user_id) VALUES($1, $2) RETURNING id"
 	err := conn.QueryRow(context.Background(), query, artist.Name, artist.UserID).Scan(&id)
 	if err != nil {

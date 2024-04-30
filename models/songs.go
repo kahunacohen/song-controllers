@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"fmt"
-	"html"
 	"regexp"
 	"time"
 
@@ -83,8 +82,6 @@ func GetSongByID(conn *pgx.Conn, id int) (*Song, error) {
 	return &song, nil
 }
 func UpdateSong(conn *pgx.Conn, song *Song) error {
-	song.Lyrics = html.EscapeString(song.Lyrics)
-	song.Title = html.EscapeString(song.Title)
 	query := "UPDATE songs SET title=$1, lyrics=$2 WHERE id=$3;"
 	_, err := conn.Exec(context.Background(), query, song.Title, song.Lyrics, song.Id)
 	if err != nil {
@@ -94,8 +91,6 @@ func UpdateSong(conn *pgx.Conn, song *Song) error {
 }
 func CreateSong(conn *pgx.Conn, song *Song) error {
 	var id int
-	song.Lyrics = html.EscapeString(song.Lyrics)
-	song.Title = html.EscapeString(song.Title)
 	query := "INSERT INTO songs (title, lyrics, user_id, genre_id, artist_id) VALUES($1, $2, $3, $4, $5) RETURNING id"
 	err := conn.QueryRow(context.Background(), query, song.Title, song.Lyrics, song.UserID, 1, song.Artist).Scan(&id)
 	if err != nil {
