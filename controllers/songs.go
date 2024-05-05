@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 
@@ -60,6 +61,7 @@ func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 		userID := c.Param("user_id")
 		var song models.Song
 		c.Bind(&song)
+		song.Title = html.EscapeString(song.Title)
 		err := models.UpdateSong(conn, &song)
 		if err != nil {
 			// @TODO error handling.
