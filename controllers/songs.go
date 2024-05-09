@@ -60,8 +60,8 @@ func UpdateSong(conn *pgx.Conn, responder UpdateResponder) gin.HandlerFunc {
 		userID := c.Param("user_id")
 		var song models.Song
 		c.Bind(&song)
-		song.Title = sanitizeInput(song.Title)
-		song.Lyrics = sanitizeInput(song.Lyrics)
+		song.Title = SanitizeInput(song.Title)
+		song.Lyrics = SanitizeInput(song.Lyrics)
 		err := models.UpdateSong(conn, &song)
 		if err != nil {
 			// @TODO error handling.
